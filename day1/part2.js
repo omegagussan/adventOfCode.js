@@ -13,9 +13,12 @@ function add(accumulator, a) {
     return accumulator + a;
 }
 
+function diffs(arr) {
+    return arr.slice(1).map((x,i)=> x-arr[i]);
+}
+
 const file = fs.readFileSync('./input.txt');
 const numbers = file.toString().split("\n").map(e => +e);
 const sums = windowedSlice(numbers, 3).map(l => l.reduce(add, 0));
-const diffs = sums.slice(1).map((x,i)=> x-sums[i]);
-const numberOfIncremented = diffs.filter(x => x > 0).length
+const numberOfIncremented = diffs(sums).filter(x => x > 0).length
 console.log(numberOfIncremented);
