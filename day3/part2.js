@@ -14,11 +14,7 @@ lines = lines.map(s => s.trim());
 const elemLength = lines[0].length;
 
 function colCountFun(lines){
-    const cols = Array();
-    for (let i = 0; i < elemLength; i++) {
-        const col = lines.map(s => s.charAt(i));
-        cols.push(col)
-    }
+    const cols = Array.from(Array(elemLength).keys()).map(i => lines.map(s => s.charAt(i)));
     return cols.map(arr => arr.reduce(count, {}));
 }
 

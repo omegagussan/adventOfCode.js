@@ -1,9 +1,6 @@
 const fs = require('fs');
 
 const count = ( acc, el ) => {
-    if (el === ''){
-      return acc;
-    }
     acc[el] = acc[el] ? acc[el] + 1 : 1;
     return acc;
 };
@@ -14,12 +11,7 @@ lines = lines.map(s => s.trim());
 const elemLength = lines[0].length;
 const twoClassComparator = lines.length/2;
 
-const cols = Array();
-for (let i = 0; i < elemLength; i++) {
-    const col = lines.map(s => s.charAt(i));
-    cols.push(col)
-}
-
+const cols = Array.from(Array(elemLength).keys()).map(i => lines.map(s => s.charAt(i)));
 const colCount = cols.map(arr => arr.reduce(count, {}));
 const gamma = colCount.map(col => (col['1'] > twoClassComparator) ? "1" : "0");
 const epsilon = colCount.map(col => (col['0'] < twoClassComparator) ? "0" : "1");
