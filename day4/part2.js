@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const file = fs.readFileSync('./input.txt');
+const file = fs.readFileSync('./sample_input.txt');
 let lines = file.toString().split("\n");
 
 function add(accumulator, a) {
@@ -16,62 +16,57 @@ function decorate_with_columns(board){
     return [...board, ...cols]
 }
 
-//queue
-const queue = lines[0].split(",").map(e => +e).reverse();
-console.log(queue);
+function createBoards(lines) {
+    let boardLines = lines.slice(2);
 
-//boards
-lines = lines.slice(2)
-//console.log(lines)
-const boards = new Map();
-let board = [];
-for (let i in lines){
-    if (lines[i] === ''){
-        //console.log(board);
-        //console.log(get_board_sum(board));
-        //console.log(decorate_with_columns(board));
-        boards.set(get_board_sum(board), decorate_with_columns(board));
-        board = [];
-    } else {
-        board.push(lines[i].trim().split(/[ ]+/).map(e => +e))
+    const boards = new Map();
+    let board = [];
+
+    for (let i in boardLines) {
+        if (boardLines[i] === '') {
+            boards.set(get_board_sum(board), decorate_with_columns(board));
+            board = [];
+        } else {
+            board.push(boardLines[i].trim().split(/[ ]+/).map(e => +e))
+        }
     }
+    boards.set(get_board_sum(board), decorate_with_columns(board));
+    return boards;
 }
-//console.log(board);
-boards.set(get_board_sum(board), decorate_with_columns(board));
-console.log(boards);
 
-function filterBoard(board, curr, sum){
+function filterBoard(board, curr){
     for (let i in board){
         board[i] = board[i].filter(elem => elem !== curr);
     }
     return board;
 }
 
-//play the game
-const exceptions = []
-while (queue.length > 0){
-    let curr = queue.pop();
-    //console.log(curr);
-    //console.log(" ")
-    for (let [sum, board] of boards.entries()) {
-        board = filterBoard(board, curr, sum, exceptions);
-        if (board.some(row => row.length === 0)){
-            if (exceptions.some(obj => obj.sum === sum)){
-                //console.log("already added");
-            } else {
-                const board_snapshot = [...board];
-                exceptions.push({sum, curr, board: board_snapshot})
-            }
-        }
-    }
-}
-
-function catcher(exceptions) {
-    let last_winner = exceptions.pop() //last exception
-    console.log(last_winner);
+function getLastWinner(winners) {
+    let last_winner = winners.pop() //last exception
     const winner_board_rows = last_winner.board.slice(0, last_winner.board.length/2);
     const final_sum = get_board_sum(winner_board_rows);
     console.log(final_sum * last_winner.curr);
 }
 
-catcher(exceptions);
+//boards
+const boards = createBoards(lines);
+
+//queue
+const queue = lines[0].split(",").map(e => +e).reverse();
+
+//play the game
+const winners = []
+while (queue.length > 0){
+    let curr = queue.pop();
+    for (let [sum, board] of boards.entries()) {
+        board = filterBoard(board, curr);
+        if (board.some(row => row.length === 0)){
+            if (! winners.some(obj => obj.sum === sum)){
+                const board_snapshot = [...board];
+                winners.push({sum, curr, board: board_snapshot})
+            }
+        }
+    }
+}
+
+getLastWinner(winners);
