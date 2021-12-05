@@ -5,8 +5,6 @@ let lines = file.toString().split('\n');
 lines = lines.map(line => line.trim().split(' -> ')
     .map(tuple => tuple.trim().split(',').map(e => +e)));
 
-//console.log(lines);
-
 function isVertical(p1, p2
 ) {
     return p1[0] === p2[0]
@@ -20,8 +18,6 @@ function inclusiveRange(from, to){
     const inclusiveTo = to + 1;
     return [...Array(inclusiveTo).keys()].slice(from, inclusiveTo);
 }
-
-//console.log(inclusiveRange(10, 2));
 
 function increment(grid, elem){
     const hashSafeElem = '' + elem;
@@ -43,17 +39,20 @@ function fillHorizontal(p1, p2, grid) {
 let validVerticalLines = lines.filter(line => isVertical(line[0], line[1]));
 let validHorizontalLines = lines.filter(line => isHorizontal(line[0], line[1]));
 
-//console.log('valid', [...validHorizontalLines, ...validVerticalLines]);
-const grid = new Map();
-validVerticalLines.forEach(line => {
-    fillVertical(line[0], line[1], grid);
-})
-validHorizontalLines.forEach(line => {
-    fillHorizontal(line[0], line[1], grid);
-})
-//console.log('grid', grid)
-const minOccurrences = 2;
-function add(accumulator, a) {
-    return accumulator + a;
+const zip = (a, b) => a.map((k, i) => [k, b[i]]);
+
+function buildGrid(datasets, methods) {
+    const grid = new Map();
+
+    zip(datasets, methods).map(pair => pair[0].forEach(line => pair[1](line[0], line[1], grid)))
+    return grid;
 }
-console.log([...grid].map(entry => entry[1]).filter(value => value >= minOccurrences).map(value => value-1).reduce(add, 0));
+
+const grid = buildGrid([validVerticalLines, validHorizontalLines], [fillVertical, fillHorizontal]);
+const minOccurrences = 2;
+
+function getMapEntryElement(entry) {
+    return entry[1];
+}
+
+console.log([...grid].map(entry => getMapEntryElement(entry)).filter(value => value >= minOccurrences).length);
