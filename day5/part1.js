@@ -5,8 +5,15 @@ let lines = file.toString().split('\n');
 lines = lines.map(line => line.trim().split(' -> ')
     .map(tuple => tuple.trim().split(',').map(e => +e)));
 
-function isVertical(p1, p2) {
+//console.log(lines);
+
+function isVertical(p1, p2
+) {
     return p1[0] === p2[0]
+}
+
+function isHorizontal(p1, p2) {
+    return p1[1] === p2[1]
 }
 
 function inclusiveRange(from, to){
@@ -17,7 +24,8 @@ function inclusiveRange(from, to){
 //console.log(inclusiveRange(10, 2));
 
 function increment(grid, elem){
-    grid.has(elem) ? grid.set(elem, grid.get(elem) + 1) : grid.set(elem, 1);
+    const hashSafeElem = '' + elem;
+    grid.has(hashSafeElem) ? grid.set(hashSafeElem, grid.get(hashSafeElem) + 1) : grid.set(hashSafeElem, 1);
 }
 
 function fillVertical(p1, p2, grid) {
@@ -26,10 +34,26 @@ function fillVertical(p1, p2, grid) {
     inclusiveRange(from, to).map(value => [p1[0], value]).forEach(coordinate => increment(grid, coordinate));
 }
 
-let validLines = lines.filter(line => isVertical(line[0], line[1]));
-console.log('valid', validLines);
+function fillHorizontal(p1, p2, grid) {
+    const from = Math.min(p1[0], p2[0])
+    const to = Math.max(p1[0], p2[0])
+    inclusiveRange(from, to).map(value => [value, p1[1]]).forEach(coordinate => increment(grid, coordinate));
+}
+
+let validVerticalLines = lines.filter(line => isVertical(line[0], line[1]));
+let validHorizontalLines = lines.filter(line => isHorizontal(line[0], line[1]));
+
+//console.log('valid', [...validHorizontalLines, ...validVerticalLines]);
 const grid = new Map();
-validLines.forEach(line => {
+validVerticalLines.forEach(line => {
     fillVertical(line[0], line[1], grid);
-    console.log(grid);
 })
+validHorizontalLines.forEach(line => {
+    fillHorizontal(line[0], line[1], grid);
+})
+//console.log('grid', grid)
+const minOccurrences = 2;
+function add(accumulator, a) {
+    return accumulator + a;
+}
+console.log([...grid].map(entry => entry[1]).filter(value => value >= minOccurrences).map(value => value-1).reduce(add, 0));
