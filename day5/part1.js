@@ -44,7 +44,7 @@ const zip = (a, b) => a.map((k, i) => [k, b[i]]);
 function buildGrid(datasets, methods) {
     const grid = new Map();
 
-    zip(datasets, methods).map(pair => pair[0].forEach(line => pair[1](line[0], line[1], grid)))
+    zip(datasets, methods).map(([dataset, method]) => dataset.forEach(([point1, point2]) => method(point1, point2, grid)))
     return grid;
 }
 
