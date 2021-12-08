@@ -1,5 +1,24 @@
 const fs = require('fs');
-const { permutations } = require('itertools');
+
+const permutations = (inputArr) => {
+    let result = [];
+
+    const permute = (arr, m = []) => {
+        if (arr.length === 0) {
+            result.push(m)
+        } else {
+            for (let i = 0; i < arr.length; i++) {
+                let curr = arr.slice();
+                let next = curr.splice(i, 1);
+                permute(curr.slice(), m.concat(next))
+            }
+        }
+    }
+
+    permute(inputArr)
+
+    return result;
+}
 
 const VALID = new Set(['abcefg', 'cf', 'acdeg', 'acdfg', 'bcdf', 'abdfg', 'abdefg', 'acf', 'abcdefg', 'abcdfg']);
 const LOOKUP = [...VALID].reduce((o, key, idx) => Object.assign(o, {[key]: idx}), {});
@@ -10,13 +29,13 @@ function initMapping(permutation){
 }
 
 function mappingPermutations(){
-    const perms = Array.from(permutations(KEYS, KEYS.length))
+    const perms = Array.from(permutations(KEYS))
     return perms.map(perm => initMapping(perm));
 }
 
 const mappings = mappingPermutations()
 
-const file = fs.readFileSync('./input.txt');
+const file = fs.readFileSync('./sample_input.txt');
 const lines = file.toString().split("\n").map(line => line.split(' '));
 const output = [...Array( 10).keys()].reduce((o, key) => Object.assign(o, {[key]: 0}), {});
 lines.forEach(line => readLine(line, [...mappings], output));
