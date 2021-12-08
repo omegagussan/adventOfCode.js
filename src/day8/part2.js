@@ -36,8 +36,9 @@ function mappingPermutations(){
 const mappings = mappingPermutations()
 
 const file = fs.readFileSync('./sample_input.txt');
-const lines = file.toString().split("\n").map(line => line.split(' '));
-const output = [...Array( 10).keys()].reduce((o, key) => Object.assign(o, {[key]: 0}), {});
+const lines = file.toString().split('\n'').map(line => line.split(' '));
+
+const output = [];
 lines.forEach(line => readLine(line, [...mappings], output));
 
 function validate(mapping, seq){
@@ -63,7 +64,11 @@ function readLine(arr, candidates){
             break;
         }
     }
-    translate(validCandidate, input).map(seq => LOOKUP[seq]).forEach(number => output['' + number] += 1);
+    output.push(+translate(validCandidate, input).map(seq => LOOKUP[seq]).join(''));
 }
 
-console.log(output['1'] + output['4'] + output['7'] + output['8'])
+function add(accumulator, a) {
+    return accumulator + a;
+}
+
+console.log(output.reduce(add, 0));
