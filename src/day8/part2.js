@@ -36,7 +36,7 @@ function mappingPermutations(){
 const mappings = mappingPermutations()
 
 const file = fs.readFileSync('./sample_input.txt');
-const lines = file.toString().split('\n'').map(line => line.split(' '));
+const lines = file.toString().split('\n').map(line => line.split(' '));
 
 const output = [];
 lines.forEach(line => readLine(line, [...mappings], output));
