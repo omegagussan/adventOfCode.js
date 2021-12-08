@@ -37,15 +37,14 @@ function readLine(arr, candidates){
     const first = arr.slice(0,10)
     const input = arr.slice(-4)
 
-    let is_valid;
+    let validCandidate;
     for (let candidate of candidates){
-        is_valid = validate(candidate, first)
-        if (is_valid){
+        validCandidate = validate(candidate, first)
+        if (validCandidate){
             break;
         }
     }
-    translate(is_valid, input).map(seq => LOOKUP[seq]).forEach(number => output['' + number] += 1);
+    translate(validCandidate, input).map(seq => LOOKUP[seq]).forEach(number => output['' + number] += 1);
 }
 
-console.log(output);
 console.log(output['1'] + output['4'] + output['7'] + output['8'])

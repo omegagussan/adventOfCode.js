@@ -18,6 +18,7 @@ const mappings = mappingPermutations()
 
 const file = fs.readFileSync('./input.txt');
 const lines = file.toString().split("\n").map(line => line.split(' '));
+
 const output = [];
 lines.forEach(line => readLine(line, [...mappings], output));
 
@@ -37,19 +38,18 @@ function readLine(arr, candidates){
     const first = arr.slice(0,10)
     const input = arr.slice(-4)
 
-    let is_valid;
+    let validCandidate;
     for (let candidate of candidates){
-        is_valid = validate(candidate, first)
-        if (is_valid){
+        validCandidate = validate(candidate, first)
+        if (validCandidate){
             break;
         }
     }
-    output.push(+translate(is_valid, input).map(seq => LOOKUP[seq]).join(''));
+    output.push(+translate(validCandidate, input).map(seq => LOOKUP[seq]).join(''));
 }
 
 function add(accumulator, a) {
     return accumulator + a;
 }
 
-console.log(output);
 console.log(output.reduce(add, 0));
