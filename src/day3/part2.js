@@ -9,7 +9,7 @@ const count = ( acc, el ) => {
 };
 
 const file = fs.readFileSync('./sample_input.txt');
-let lines = file.toString().split("\n");
+let lines = file.toString().split('\n');
 lines = lines.map(s => s.trim());
 const elemLength = lines[0].length;
 
@@ -18,22 +18,22 @@ function colCountFun(lines){
     return cols.map(arr => arr.reduce(count, {}));
 }
 
-const oxygen_condtional = (colCount, col) => {
+const oxygenConditional = (colCount, col) => {
     return colCount[col]['1'] >= colCount[col]['0'];
 }
 
-const co2_scrub_condtional = (colCount, col) => {
+const co2ScrubConditional = (colCount, col) => {
     return colCount[col]['0'] <= colCount[col]['1'];
 }
 
-function oxygen_function(lines) {
+function oxygenFunction(lines) {
     let candidates = lines.slice();
     let colCount = colCountFun(candidates);
-    return reduce_candidates(colCount, candidates, oxygen_condtional, "1", "0");
+    return reduceCandidates(colCount, candidates, oxygenConditional, '1', '0');
 
 }
 
-function reduce_candidates(colCount, candidates, con, outcome1, outcome2) {
+function reduceCandidates(colCount, candidates, con, outcome1, outcome2) {
     for (let col in colCount) {
         colCount = colCountFun(candidates);
         if (con(colCount, col)) {
@@ -48,13 +48,12 @@ function reduce_candidates(colCount, candidates, con, outcome1, outcome2) {
     return parseInt(candidates[0], 2);
 }
 
-function co2_scrub_function(lines) {
+function co2ScrubFunction(lines) {
     let candidates = lines.slice();
     let colCount = colCountFun(candidates);
-    return reduce_candidates(colCount, candidates, co2_scrub_condtional, "0", "1");
+    return reduceCandidates(colCount, candidates, co2ScrubConditional, '0', '1');
 }
 
-const co2_scrub = co2_scrub_function(lines);
-const oxygen_int = oxygen_function(lines);
-console.log([oxygen_int, co2_scrub])
-console.log(oxygen_int*co2_scrub)
+const co2Scrub = co2ScrubFunction(lines);
+const oxygenInt = oxygenFunction(lines);
+console.log(oxygenInt*co2Scrub)

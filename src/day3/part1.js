@@ -6,15 +6,15 @@ const count = ( acc, el ) => {
 };
 
 const file = fs.readFileSync('./sample_input.txt');
-let lines = file.toString().split("\n");
+let lines = file.toString().split('\n');
 lines = lines.map(s => s.trim());
 const elemLength = lines[0].length;
 const twoClassComparator = lines.length/2;
 
 const cols = Array.from(Array(elemLength).keys()).map(i => lines.map(s => s.charAt(i)));
 const colCount = cols.map(arr => arr.reduce(count, {}));
-const gamma = colCount.map(col => (col['1'] > twoClassComparator) ? "1" : "0");
-const epsilon = colCount.map(col => (col['0'] < twoClassComparator) ? "0" : "1");
-const gamma_int = parseInt(gamma.join(""), 2);
-const epsilon_int = parseInt(epsilon.join(""), 2);
-console.log(gamma_int*epsilon_int)
+const gamma = colCount.map(col => (col['1'] > twoClassComparator) ? '1' : '0');
+const epsilon = colCount.map(col => (col['0'] < twoClassComparator) ? '0' : '1');
+const gammaInt = parseInt(gamma.join(''), 2);
+const epsilonInt = parseInt(epsilon.join(''), 2);
+console.log(gammaInt*epsilonInt)

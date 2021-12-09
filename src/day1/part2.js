@@ -18,7 +18,7 @@ function diffs(arr) {
 }
 
 const file = fs.readFileSync('./input.txt');
-const numbers = file.toString().split("\n").map(e => +e);
+const numbers = file.toString().split('\n').map(e => +e);
 const sums = windowedSlice(numbers, 3).map(l => l.reduce(add, 0));
 const numberOfIncremented = diffs(sums).filter(x => x > 0).length
 console.log(numberOfIncremented);

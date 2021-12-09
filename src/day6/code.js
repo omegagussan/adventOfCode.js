@@ -45,4 +45,4 @@ function sumFishAfterDays(days, debug=false) {
 }
 
 console.log('part1:', sumFishAfterDays(80));
-console.log('part1:', sumFishAfterDays(256));
+console.log('part2:', sumFishAfterDays(256));

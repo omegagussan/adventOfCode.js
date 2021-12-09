@@ -1,17 +1,17 @@
 const fs = require('fs');
 
 const file = fs.readFileSync('./sample_input.txt');
-let lines = file.toString().split("\n");
+let lines = file.toString().split('\n');
 
 function add(accumulator, a) {
     return accumulator + a;
 }
 
-function get_board_sum(board){
+function getBoardSum(board){
     return board.flat().reduce(add, 0);
 }
 
-function decorate_with_columns(board){
+function decorateWithColumns(board){
     const cols = Array.from(Array(board.length).keys()).map(i => board.map(row => row[i]));
     return [...board, ...cols]
 }
@@ -24,13 +24,13 @@ function createBoards(lines) {
 
     for (let i in boardLines) {
         if (boardLines[i] === '') {
-            boards.set(get_board_sum(board), decorate_with_columns(board));
+            boards.set(getBoardSum(board), decorateWithColumns(board));
             board = [];
         } else {
             board.push(boardLines[i].trim().split(/[ ]+/).map(e => +e))
         }
     }
-    boards.set(get_board_sum(board), decorate_with_columns(board));
+    boards.set(getBoardSum(board), decorateWithColumns(board));
     return boards;
 }
 
@@ -46,7 +46,7 @@ function filterBoard(board, curr, sum){
 const boards = createBoards(lines);
 
 //queue
-const queue = lines[0].split(",").map(e => +e).reverse();
+const queue = lines[0].split(',').map(e => +e).reverse();
 
 //play the game
 try {
@@ -58,10 +58,9 @@ try {
     }
 } catch(sum){
     console.log(`bingo on board with: ${sum.message}`);
-    const winner_sum = +sum.message.split(" ")[0]
-    const winner_curr = +sum.message.split(" ")[1]
-    const winner_board = boards.get(winner_sum);
-    const winner_board_rows = winner_board.slice(0, winner_board.length/2);
-    const final_sum = get_board_sum(winner_board_rows);
-    console.log(final_sum * winner_curr);
+    const [winnerSum, winnerCurr] = sum.message.split(' ').map(e => +e);
+    const winnerBoard = boards.get(winnerSum);
+    const winnerBoardRows = winnerBoard.slice(0, winnerBoard.length/2);
+    const finalSum = getBoardSum(winnerBoardRows);
+    console.log(finalSum * winnerCurr);
 }

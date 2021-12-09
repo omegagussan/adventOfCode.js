@@ -12,8 +12,8 @@ function costOfDistance(distance){
     return (distance*(distance+1))/2;
 }
 
-const min_cost = inclusiveRange(sortedLine[0], sortedLine.slice(-1)[0]).reduce((min, i) => {
+const minCost = inclusiveRange(sortedLine[0], sortedLine.slice(-1)[0]).reduce((min, i) => {
     const cost = sortedLine.reduce((sum, elem) => sum += costOfDistance(Math.abs(elem-i)), 0);
     return Math.min(min, cost);
 }, Number.MAX_SAFE_INTEGER);
-console.log(min_cost);
+console.log(minCost);
