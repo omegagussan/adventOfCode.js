@@ -40,6 +40,9 @@ function sweapIncrement(matrix) {
             getNeighbourKeys(rowIdx, colIdx).map(([row, col]) => recursiveFlash(matrix, row, col, flashedToday))
         }
     }));
+    if (flashedToday.size === matrix.flat().length){
+        throw Error('all flashed')
+    }
     return {matrix, flashed: flashedToday.size}
 }
 
@@ -54,12 +57,14 @@ function recursiveFlash(matrix, row, col, flashedToday){
         getNeighbourKeys(row, col).map(([row, col]) => recursiveFlash(matrix, row, col, flashedToday))
     }
 }
-const days = 100
-let totalFlashes = 0
+const days = 10000
 for (let d of [...Array(days + 1).keys()].slice(1)) {
     console.log('day', d);
-    let {matrix, flashed} = sweapIncrement(lines);
-    lines = matrix;
-    totalFlashes += flashed;
+    try {
+        let {matrix} = sweapIncrement(lines);
+        lines = matrix;
+    } catch (e){
+        console.log(d)
+        break
+    }
 }
-console.log(totalFlashes)
