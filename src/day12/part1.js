@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const file = fs.readFileSync('./input.txt');
+const file = fs.readFileSync('./small.txt');
 let lines = file.toString().split('\n');
 lines = lines.map(line => line.trim().split('-'));
 
@@ -28,13 +28,16 @@ function traverse(edges, curr, hist){
     if (curr === 'end'){
         return 1
     }
-    const cand = getAsList(edges, curr).filter(cand => !hist.has(cand));
+    const cand = getAsList(edges, curr);
     return cand.map(c => {
-        if (curr.toLowerCase() === curr){
-            let s = new Set([...hist, curr]);
-            return traverse(edges, c, s)
+        if (!hist.has(c)){
+            if (curr.toLowerCase() === curr){
+                let s = new Set([...hist, curr]);
+                return traverse(edges, c, s)
+            }
+            return traverse(edges, c, hist)
         }
-        return traverse(edges, c, hist)
+        return 0
     }).reduce(add, 0)
 }
 
