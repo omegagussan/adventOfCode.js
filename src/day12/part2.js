@@ -20,24 +20,24 @@ const edges = lines.reduce((acc, [from, to]) => {
 }, {});
 console.log(edges)
 
-let paths = [];
-const traverse = (curr, path = [], visitTwice = false) => {
-    const nextPath = [...path, curr];
+let allWays = [];
+const traverse = (curr, currWay = [], visitedTwice = false) => {
+    const nextPath = [...currWay, curr];
 
     if (curr === 'end') {
-        paths.push(nextPath);
+        allWays.push(nextPath);
         return;
     }
 
     edges[curr].forEach((child) => {
         if (child === 'start') return;
 
-        let nextFlag = visitTwice;
+        let nextFlag = visitedTwice;
 
         if (child.toLowerCase() ===  child) {
-            if (path.includes(child)) {
+            if (currWay.includes(child)) {
                 if (nextFlag) return;
-                nextFlag = true;
+                nextFlag = true
             }
         }
 
@@ -46,4 +46,4 @@ const traverse = (curr, path = [], visitTwice = false) => {
 };
 
 traverse('start');
-console.log(paths.length);
+console.log(allWays.length);
