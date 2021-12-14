@@ -8,7 +8,6 @@ const file = fs.readFileSync('./sample_input.txt');
 let lines = file.toString().split('\n');
 let [template, ...rules] = lines
 rules = rules.filter(e => e !== '').map(e => e.split(' -> ')).map(([f, d]) => [f, addStr(f, 1, d)])
-console.log([template, rules])
 
 function insert(template, rules){
     let ta = template.split('')
@@ -28,7 +27,7 @@ const occur = template.split('').reduce((acc, e)=>{
     acc[e] = acc[e] ? acc[e] + 1 : 1
     return acc;
 }, {});
-console.log(occur)
+
 let min = Number.MAX_SAFE_INTEGER
 let max = 0
 Object.entries(occur).forEach(([k,v]) => {

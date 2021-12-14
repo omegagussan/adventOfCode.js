@@ -8,9 +8,9 @@ const file = fs.readFileSync('./input.txt');
 let lines = file.toString().split('\n');
 let [template, ...rules] = lines
 rules = rules.filter(e => e !== '').map(e => e.split(' -> ')).map(([f, d]) => [f, addStr(f, 1, d)])
-let ta = template.split('')
-let elems = ta.map((e, i) => [e, ta[i+1]].join('')).filter(e => e.length > 1)
-let templateD = elems.reduce((acc, e)=>{
+
+const ta = template.split('')
+let templateD = ta.map((e, i) => [e, ta[i + 1]].join('')).filter(e => e.length > 1).reduce((acc, e)=>{
     acc[e] = acc[e] ? acc[e] + 1 : 1
     return acc;
 }, {});
@@ -34,8 +34,35 @@ function insert(template, rules){
             newTemplate[attrname] = old ? old + addition : addition;
         }
     }
-    console.log(newTemplate)
     return newTemplate
+}
+
+function countCharacters(templateD, ta) {
+    let a = {}
+
+    Object.entries(templateD).forEach(([k, v]) => {
+        let key = k.charAt(0)
+        a[key] = a[key] ? a[key] + v : v
+    });
+
+    //add last char since its not a part of a pair
+    let o = a[ta.slice(-1)]
+    a[ta.slice(-1)] = o ? o + 1 : 1;
+
+    return a;
+}
+
+function computeAnswer(dict) {
+    let min = Number.MAX_SAFE_INTEGER
+    let max = 0
+    Object.entries(dict).forEach(([k, v]) => {
+        if (v > max) {
+            max = v
+        } else if (v < min) {
+            min = v
+        }
+    });
+    return max - min;
 }
 
 const step = 40
@@ -43,24 +70,5 @@ Array.from(Array(step+1).keys()).filter(e => e> 0).forEach(i => {
     console.log(i)
     templateD = insert(templateD, rules)
 })
-
-a = {}
-Object.entries(templateD).forEach(([k,v]) => {
-    let key = k.charAt(0)
-    a[key] = a[key] ? a[key] + v : v
-});
-console.log('a-1', a)
-let o = a[ta.slice(-1)]
-a[ta.slice(-1)] = o ? o + 1 : 1;
-console.log('a', a)
-
-let min = Number.MAX_SAFE_INTEGER
-let max = 0
-Object.entries(a).forEach(([k,v]) => {
-    if(v > max){
-        max = v
-    } else if (v < min){
-        min = v
-    }
-});
-console.log(max-min)
+const answerD = countCharacters(templateD, ta);
+console.log(computeAnswer(answerD))
