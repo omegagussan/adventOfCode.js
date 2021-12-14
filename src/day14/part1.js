@@ -1,7 +1,9 @@
 const fs = require('fs');
 
 function addStr(str, index, stringToAdd){
-    return str.substring(0, index) + stringToAdd + str.substring(index, str.length);
+    let s = [... str]
+    s.splice(index, 0, stringToAdd);
+    return s.join('')
 }
 
 const file = fs.readFileSync('./sample_input.txt');
