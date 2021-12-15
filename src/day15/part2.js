@@ -21,13 +21,11 @@ function decorateLargeGrid(grid, xsteps, xlen, ysteps, ylen){
     let newGrid = {}
     for (let y=0; y < ysteps; y++){
         for(let x=0; x < xsteps; x++){
-            let subGrid = Object.entries(grid).reduce((acc, [k, v]) => {
+            Object.entries(grid).forEach(([k, v]) => {
                 let ks = k.split(',').map(e => +e)
                 let nk = key( y * ylen + ks[0],  x * xlen + ks[1])
-                acc[nk] = (v + x + y) > 9 ? (v + x + y) % 10 + 1 : (v + x + y);
-                return acc;
-            }, {})
-            newGrid = {...newGrid, ...subGrid}
+                newGrid[nk] = (v + x + y) > 9 ? (v + x + y) % 10 + 1 : (v + x + y);
+            })
         }
     }
     return newGrid;
