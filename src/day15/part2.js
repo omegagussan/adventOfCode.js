@@ -60,15 +60,14 @@ const END = key(lines.length * YSTEPS-1, lines[0].length * XSTEPS -1)
 let bestMap = Object.entries(grid).reduce((acc, [k, _]) => {acc[k]=Number.MAX_SAFE_INTEGER; return acc}, {});
 bestMap[START] = 0
 
+let target = Number.MAX_SAFE_INTEGER - 1; //dont init to same
 //numerical stability
-let target = Number.MAX_SAFE_INTEGER;
-for(let i=0; i < 10; i++){
+while(!(target === bestMap[END])){
+    target = bestMap[END]
     for (let [k, v] of Object.entries(grid)){
         if (k === START){continue;}
         bestMap[k] = v + Math.min(...getNeighbourKeys(k).map(key => bestMap[key]));
     }
-    if (target === bestMap[END]) break //stabilized
-    target = bestMap[END]
 }
 console.log(`Call to loop took ${performance.now() - startTime} milliseconds`)
 console.log(target);
