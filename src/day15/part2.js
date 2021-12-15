@@ -1,4 +1,6 @@
 const fs = require('fs');
+const { performance } = require('perf_hooks');
+let startTime = performance.now()
 
 const XSTEPS = 5
 const YSTEPS = 5
@@ -31,8 +33,10 @@ function decorateLargeGrid(grid, xsteps, xlen, ysteps, ylen){
     return newGrid;
 }
 grid = decorateLargeGrid(grid, XSTEPS, lines[0].length, YSTEPS,lines.length)
+
+console.log(`Call to decorateGrid took ${performance.now() - startTime} milliseconds`)
 //console.log(Array.from(Array(50).keys()).map(i => grid[key(49, i)]).join(''));
-console.log(Object.keys(grid).length)
+//console.log(Object.keys(grid).length)
 //let t = decorateLargeGrid({'1,2': 8}, 5, lines[0].length, 5,lines.length)
 //console.log(t)
 
@@ -57,10 +61,14 @@ let bestMap = Object.entries(grid).reduce((acc, [k, _]) => {acc[k]=Number.MAX_SA
 bestMap[START] = 0
 
 //numerical stability
+let target = Number.MAX_SAFE_INTEGER;
 for(let i=0; i < 10; i++){
     for (let [k, v] of Object.entries(grid)){
         if (k === START){continue;}
         bestMap[k] = v + Math.min(...getNeighbourKeys(k).map(key => bestMap[key]));
     }
+    if (target === bestMap[END]) break //stabilized
+    target = bestMap[END]
 }
-console.log(bestMap[END]);
+console.log(`Call to loop took ${performance.now() - startTime} milliseconds`)
+console.log(target);
