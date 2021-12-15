@@ -31,8 +31,8 @@ const END = key(lines.length-1, lines[0].length-1)
 
 let bestMap = Object.entries(grid).reduce((acc, [k, _]) => {acc[k]=Number.MAX_SAFE_INTEGER; return acc}, {});
 bestMap[START] = 0
-for (let [k, _] of Object.entries(grid)){
+for (let [k, v] of Object.entries(grid)){
     if (k === START){continue;}
-    bestMap[k] = grid[k] + Math.min(...getNeighbourKeys(k).map(key => bestMap[key]));
+    bestMap[k] = v + Math.min(...getNeighbourKeys(k).map(key => bestMap[key]));
 }
 console.log(bestMap[END]);
