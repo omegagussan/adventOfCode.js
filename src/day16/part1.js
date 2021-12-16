@@ -9,25 +9,29 @@ function add(accumulator, a) {
     return accumulator + a;
 }
 
+const LITERAL_STRIDE = 5;
+const TO_BINARY = 2;
 function parsePacket(bin){
     const chars = bin.split('');
-    let version = Number.parseInt(chars.splice(0,3).join(''), 2);
-    let typeId = Number.parseInt(chars.splice(0, 3).join(''), 2);
+    let version = Number.parseInt(chars.splice(0,3).join(''), TO_BINARY);
+    let typeId = Number.parseInt(chars.splice(0, 3).join(''), TO_BINARY);
 
     if (typeId === 4) {
         let literalBinary = '';
 
-        while (true) {
-            const sub = chars.splice(0, 5).join('').padEnd(5, '0');
+        while (chars.length > 0) {
+            const sub = chars.splice(0, LITERAL_STRIDE).join('').padEnd(LITERAL_STRIDE, '0');
             literalBinary += sub.slice(1);
             if (sub[0] === '0') break;
         }
         return {versions: [version], rest: chars.join('')}
     }
 
+    const BIT_LENGTH_STRIDE = 15;
+    const SUB_PACKET_STRIDE = 11;
     const lengthTypeId = chars.shift();
     if (lengthTypeId === '0'){
-        const bitLength = Number.parseInt(chars.splice(0, 15).join(''), 2)
+        const bitLength = Number.parseInt(chars.splice(0, BIT_LENGTH_STRIDE).join(''), TO_BINARY)
         let content = chars.splice(0, bitLength).join('');
 
         let v = []
@@ -39,7 +43,7 @@ function parsePacket(bin){
         return {versions: [...v, version], rest: chars.join('')}
 
     } else {
-        const numSubPackets = Number.parseInt(chars.splice(0, 11).join(''), 2)
+        const numSubPackets = Number.parseInt(chars.splice(0, SUB_PACKET_STRIDE).join(''), TO_BINARY)
 
         let content = chars.join('');
 
