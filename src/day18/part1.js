@@ -17,14 +17,24 @@ function getDepth(match) {
     }, 0);
 }
 
-function reduce(line) {
-    untilNoChanges: while (true) {
+function reduce(input) {
+    let line = input.slice() //copy
+    while (true) {
         const explodes = matchTwoElementPair(line).filter(match => match.length > 0)
-            .map(match => [match, getDepth(match)]).filter(p => p[1] >= 4).map(p => p[0])
-        explodes.forEach(match => {line = explode(match)})
+            .map(match => [match, getDepth(match)]).filter(p => p[1] >= 4).map(p => p[0]);
+        const leftMostExplodes = explodes.length > 0 ? explodes[0] : null
+        if(leftMostExplodes){
+            line = explode(leftMostExplodes);
+            continue;
+        }
+
 
         const splits = matchTwoDigitNumber(line).filter(match => match.length > 0);
-        splits.forEach(match => {line = split(match)})
+        const leftMostSplit = splits.length > 0 ? splits[0] : null
+        if (leftMostSplit){
+            line=split(leftMostSplit);
+        }
+
         if (splits.length === 0 && explodes.length === 0){
             break;
         }
@@ -39,8 +49,8 @@ function replaceLast(arr, pattern, replacerFn){
 }
 
 function explode(match) {
-    const matchStr = match[0]
-    const [left, right] = match.input.split(matchStr)
+    let left = match.input.slice(0, match.index);
+    let right = match.input.slice(match.index + match[0].length);
     const leftExplodedValue = Number(match[1]);
     const rightExplodedValue = Number(match[2]);
 
@@ -54,14 +64,18 @@ function explode(match) {
 function split(match) {
     const matchStr = match[0]
     const matchVal = +matchStr
-    const [left, right] = match.input.split(matchStr)
+    let left = match.input.slice(0, match.index);
+    let right = match.input.slice(match.index + match[0].length);
     return `${left}[${Math.floor(matchVal / 2)},${Math.ceil(matchVal / 2)}]${right}`;
 }
 
-const file = fs.readFileSync('./sample_input.txt');
-let lines = file.toString().split('\n');
-//lines = lines.map(row => JSON.parse(row))
-//console.log('given',lines)
+function magnitude(pair) {
+    const [a, b] = pair.map((n) => (Array.isArray(n) ? magnitude(n) : n));
+    return 3 * a + 2 * b;
+}
+
+const file = fs.readFileSync('./input.txt');
+const lines = file.toString().split('\n');
 
 function testSplit() {
     let test = `
@@ -107,3 +121,15 @@ function testExplode() {
 }
 testSplit();
 testExplode();
+
+function solve(lines) {
+    let startElem = lines.shift()
+    let sum = lines.reduce((acc, line) => {
+        acc = reduce(`[${acc},${line}]`)
+        return acc;
+    }, startElem);
+    let sumJSON = JSON.parse(sum)
+    let m = magnitude(sumJSON)
+    return m
+}
+console.log(solve(lines));
