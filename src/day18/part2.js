@@ -74,13 +74,13 @@ function magnitude(pair) {
     return 3 * a + 2 * b;
 }
 
-function combineAllNonCommutative(arr1, arr2){
+function* combineAllNonCommutative(arr1, arr2){
     const res = []
     for (let e1 of arr1){
         for (let e2 of arr2){
             if (e1 !== e2){
-                res.push([e1, e2])
-                res.push([e2, e1])
+                yield [e1, e2]
+                yield [e2, e1]
             }
         }
     }
@@ -137,9 +137,17 @@ testSplit();
 testExplode();
 
 function solveP2(lines) {
-    let combinations = combineAllNonCommutative(lines, lines)
-    let sums = combinations.map(([e1, e2]) => `[${e1},${e2}]`)
-        .map(s => magnitude(JSON.parse(reduce(s))))
-    return Math.max(...sums)
+    let combinationGenerator = combineAllNonCommutative(lines, lines)
+    let elem = combinationGenerator.next()
+    let max = 0
+    while (!elem.done){
+        const stringElem = `[${elem.value[0]},${elem.value[1]}]`
+        const mag = magnitude(JSON.parse(reduce(stringElem)))
+        if (mag > max){
+            max = mag
+        }
+        elem = combinationGenerator.next()
+    }
+    return max
 }
 console.log(solveP2(lines));
