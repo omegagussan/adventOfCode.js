@@ -87,6 +87,19 @@ function* combineAllNonCommutative(arr1, arr2){
     return res
 }
 
+function reduceGenerator(generator, reducerFn, init){
+    let acc = init
+    if(reducerFn.length !== 2){
+        throw Error("wrong arguments for reduce function; acc, elem expected")
+    }
+    let elem = generator.next()
+    while (!elem.done){
+        acc = reducerFn(acc, elem)
+        elem = generator.next()
+    }
+    return acc;
+}
+
 
 const file = fs.readFileSync('./input.txt');
 const lines = file.toString().split('\n');
@@ -138,16 +151,12 @@ testExplode();
 
 function solveP2(lines) {
     let combinationGenerator = combineAllNonCommutative(lines, lines)
-    let elem = combinationGenerator.next()
-    let max = 0
-    while (!elem.done){
+    const max = (acc, elem) => {
         const stringElem = `[${elem.value[0]},${elem.value[1]}]`
-        const mag = magnitude(JSON.parse(reduce(stringElem)))
-        if (mag > max){
-            max = mag
-        }
-        elem = combinationGenerator.next()
+        const mag = magnitude(JSON.parse(reduce(stringElem)));
+        if(mag > acc){acc = mag}
+        return acc;
     }
-    return max
+    return reduceGenerator(combinationGenerator, max, 0)
 }
 console.log(solveP2(lines));
