@@ -13,7 +13,7 @@ function combineAll(arr1, arr2, arr3){
     return res
 }
 
-//OBS! 3x3 only
+//OBS! 3x3 only OR 2x2
 // [ [a,b,c],
 // [d,e,f],
 // [g,h,i] ];
@@ -33,17 +33,16 @@ function determinant(mat){
     return mat[0][0]*(e*i-f*h)-mat[0][1]*(d*i-f*g)+mat[0][2]*(d*h-e*g); // notice the alternating signs
 
 }
-rot = []
+let rotationMat = []
 for(let x of [-1, 1]){
     for(let y of [-1, 1]){
         for (let z of [-1, 1]){
             for (let q of combineAll([x,0,0], [0,y,0], [0,0,z])){
-                if (determinant(q) === 1) rot.push(q)
+                if (determinant(q) === 1) rotationMat.push(q)
             }
         }
     }
 }
-console.log(rot.length)
 
 let scanners = []
 let curr = []
@@ -64,7 +63,8 @@ for (const s of scanners){
             if (i === j) continue
             let dx = Math.abs(s[i].cord[0] - s[j].cord[0])
             let dy = Math.abs(s[i].cord[1] - s[j].cord[1])
-            let fingerprint = [dx*dx + dy*dy, Math.min(dx, dy), Math.max(dx,dy)].join(',')
+            let dz = Math.abs(s[i].cord[2] - s[j].cord[2])
+            let fingerprint = [dx*dx + dy*dy + dz*dz, Math.min(dx, dy, dz), Math.max(dx,dy,dz)].join(',')
             s[i].relative[j] = fingerprint
             s[j].relative[i] = fingerprint //TODO: we can prune loop to not have to do all twice.
         }
@@ -86,11 +86,51 @@ function compareScanner(s1, s2){
     for (let b1 of s1) {
         for (let b2 of s2) {
             const intersection = commonBeacons(b1, b2)
-            if (intersection) {// .length >= 11) {
+            if (intersection.length >= 11) {
                 return {b1, b2, intersection}
             }
         }
     }
+}
+
+function matMul(m1, m2){
+    if (m1[0].length !== m2.length) throw Error("Matrices cannot be multiplied");
+    let multiplication = new Array(m1.length).fill('placeholder');
+    multiplication = multiplication.map(placeholder => new Array(m2[0].length).fill(0));
+    for (let x=0; x < multiplication.length; x++) {
+        for (let y=0; y < multiplication[x].length; y++) {
+            for (let z=0; z<m1[0].length; z++) {
+                //dot for every position
+                multiplication [x][y] = multiplication [x][y] + m1[x][z]*m2[z][y];
+            }
+        }
+    }
+    return multiplication
+}
+
+function unittestMatMul() {
+    let expected = [[2], [3], [5]]
+    let test = matMul([[1, 0, 0], [0, 1, 0], [0, 0, 1]], [[2], [3], [5]])
+    console.assert(JSON.stringify(test) === JSON.stringify(expected), 'multiplication with identity matrix failed')
+}
+
+unittestMatMul();
+
+function rebaseBtoA(scannerA, scannerB, intersectionsObj){
+    for(let i of intersectionsObj.intersection){
+        if(i[0].split(',')[1] === "0") continue
+        let from = scannerB[i[2]].cord
+        let to = scannerA[i[1]].cord
+        console.log('to', to)
+        for (let r of rotationMat){
+            let cand = matMul(r, from.map(e => [e])).flat() //column vector
+            console.log('cand', cand)
+            if (JSON.stringify(cand) === JSON.stringify(to)){
+                console.log('Bazinga')
+            }
+        }
+    }
+    //rotationMat.map(r => matMul(r, ))
 }
 
 scanners[0].absolute = [0, 0]
@@ -99,11 +139,9 @@ while (fixed.size < scanners.length) {
     for (let i = 0; i < scanners.length; i++) {
         for (let j = 0; j < scanners.length; j++) {
             if (i === j || !fixed.has(i) || fixed.has(j)) continue
-            console.log(i, j)
-            let intersection = compareScanner(scanners[i], scanners[j])
-            console.log(intersection)
-            if (!intersection) continue
-            //this.scanners[i].align(this.scanners[j], intersection)
+            let intersections = compareScanner(scanners[i], scanners[j])
+            if (!intersections) continue
+            rebaseBtoA(scanners[i], scanners[j], intersections) //TODO: assign back to scanner[j]
             fixed.add(j)
         }
     }
