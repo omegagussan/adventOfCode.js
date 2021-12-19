@@ -13,7 +13,7 @@ function combineAll(arr1, arr2, arr3){
     return res
 }
 
-//OBS! 3x3 only OR 2x2
+//OBS! 3x3 only
 // [ [a,b,c],
 // [d,e,f],
 // [g,h,i] ];
@@ -33,12 +33,36 @@ function determinant(mat){
     return mat[0][0]*(e*i-f*h)-mat[0][1]*(d*i-f*g)+mat[0][2]*(d*h-e*g); // notice the alternating signs
 
 }
+
+function unittestDeterminant() {
+    let test0 = determinant([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
+    let test1 = determinant([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    let test2 = determinant([[1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    let test3 = determinant([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
+    let testX = determinant([[1, 2, 3], [4, 11, 6], [7, 8, 9]])
+    let testY = determinant([[-5, 2, 3], [4, 5, 6], [7, 8, 9]])
+
+
+    console.assert(test0 === 0, 'determinant unittest 0 failed')
+    console.assert(test1 === 0, 'determinant unittest 1 failed')
+    console.assert(test2 === 0, 'determinant unittest 2 failed')
+    console.assert(test3 === 0, 'determinant unittest 3 failed')
+    console.assert(testX === -72, 'determinant unittest X failed')
+    console.assert(testY === 18, 'determinant unittest Y failed')
+}
+
+
+/*
+https://math.stackexchange.com/questions/503047/why-is-the-determinant-of-a-rotation-matrix-equal-to-1
+generate all possible candidates for rotation matrixes with 3 dimensions > 160 st
+will filter away invalid rotation matrixes using the determinant => 24
+ */
 let rotationMat = []
 for(let x of [-1, 1]){
     for(let y of [-1, 1]){
         for (let z of [-1, 1]){
             for (let q of combineAll([x,0,0], [0,y,0], [0,0,z])){
-                if (determinant(q) === 1) rotationMat.push(q)
+                if (determinant(q) === 1) rotationMat.push(q) //
             }
         }
     }
@@ -115,6 +139,8 @@ function unittestMatMul() {
 }
 
 unittestMatMul();
+unittestDeterminant();
+
 
 function rebaseBtoA(scannerA, scannerB, intersectionsObj){
     for(let i of intersectionsObj.intersection){
