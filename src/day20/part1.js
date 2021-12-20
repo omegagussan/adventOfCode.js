@@ -71,8 +71,8 @@ function getImageFromCenter(grid, key, char){
 //print(grid, 'before')
 
 function pass(grid, expand=true, fillerChar) {
-    rowRange = [rowRange[0] - 7, rowRange[0] - 6, rowRange[0] - 5, rowRange[0] - 4, rowRange[0] - 3, rowRange[0] - 2, rowRange[0] - 1, ...rowRange, rowRange.slice(-1)[0] + 1, rowRange.slice(-1)[0] +2, rowRange.slice(-1)[0] +3, rowRange.slice(-1)[0] +4, rowRange.slice(-1)[0] +5, rowRange.slice(-1)[0] +6, rowRange.slice(-1)[0] +7]
-    colRange = [colRange[0] - 7, colRange[0] - 6, colRange[0] - 5, colRange[0] - 4, colRange[0] - 3, colRange[0] - 2, colRange[0] - 1, ...colRange, colRange.slice(-1)[0] + 1, colRange.slice(-1)[0] +2, colRange.slice(-1)[0] +3, colRange.slice(-1)[0] +4, colRange.slice(-1)[0] +5, colRange.slice(-1)[0] +6, colRange.slice(-1)[0] +7]
+    rowRange = [rowRange[0] - 1, ...rowRange, rowRange.slice(-1)[0] + 1]
+    colRange = [colRange[0] - 1, ...colRange, colRange.slice(-1)[0] + 1]
     const inserts = {}
     for (const r of rowRange) {
         for (const c of colRange) {
