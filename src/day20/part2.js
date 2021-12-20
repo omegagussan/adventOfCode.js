@@ -80,13 +80,13 @@ function pass(grid, expand=true, fillerChar) {
             inserts[k] = algoDict[int]
         }
     }
-    return {...grid, ...inserts}
+    return inserts
 }
 
 const isAlternating = algoDict[0] === '#'
 for (let i=0; i < 50; i++){
     if (i === 0){grid = pass(grid, true,'.');}
-    else if (i % 2 === 1){grid = pass(grid, true, isAlternating ? '#' : '.');}
-    else {grid = pass(grid, true, '.');}
+    else if (i % 2 === 1){grid = pass(grid, false, isAlternating ? '#' : '.');}
+    else {grid = pass(grid, false, '.');}
 }
 console.log(countLit(grid));

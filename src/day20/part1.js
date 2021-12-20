@@ -82,7 +82,7 @@ function pass(grid, expand=true, fillerChar) {
             inserts[k] = algoDict[int]
         }
     }
-    return {...grid, ...inserts}
+    return inserts
 }
 
 const isAlternating = algoDict[0] === '#'
