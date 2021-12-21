@@ -24,12 +24,12 @@ let score = [0, 0]
 console.log(state)
 
 function play(player, die, state, score) {
-    let rollDie = 0
+    let dieRollSum = 0
     for (let i=0; i<3; i++){
         let next = die.next().value
-        rollDie += next
+        dieRollSum += next
     }
-    state[player] = (state[player] + rollDie) % 10
+    state[player] = (state[player] + dieRollSum) % 10
     score[player] = score[player] + state[player] + 1
 }
 
