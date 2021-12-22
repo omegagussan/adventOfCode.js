@@ -3,6 +3,10 @@ const fs = require('fs');
 const file = fs.readFileSync('./input.txt');
 const lines = file.toString().split('\n');
 
+function zip(a,b) {
+    return a.map((k, i) => [k, b[i]])
+}
+
 function matchRange(line) {
     return [...line.matchAll(/([\d-]+)\.\.([\d-]+)/g)];
 }
@@ -28,16 +32,13 @@ const cuboids = [];
 for (const [nSign, ...newCube] of rows) {
     const compensationIntersectionCubes = []
     for (const [oSign, ...oldCube] of cuboids) {
-        const xMin = Math.max(newCube[0], oldCube[0])
-        const xMax = Math.min(newCube[1], oldCube[1]);
-        if (xMin > xMax) continue;
-        const yMin = Math.max(newCube[2], oldCube[2])
-        const yMax = Math.min(newCube[3], oldCube[3]);
-        if (yMin > yMax) continue;
-        const zMin = Math.max(newCube[4], oldCube[4])
-        const zMax = Math.min(newCube[5], oldCube[5]);
-        if (zMin > zMax) continue;
-        compensationIntersectionCubes.push([-oSign, xMin, xMax, yMin, yMax, zMin, zMax]);
+        const cubeDiff = zip(newCube, oldCube);
+        const minDims = cubeDiff.filter((e,i) => i % 2 === 0).map(a => Math.max(...a))
+        const maxDims = cubeDiff.filter((e,i) => i % 2 === 1).map(a => Math.min(...a))
+        const allDims = zip(minDims, maxDims)
+        const noIntersectionCondition = allDims.some(([min, max]) => min > max)
+        if (noIntersectionCondition) continue
+        compensationIntersectionCubes.push([-oSign, ...allDims.flat()]);
     }
     cuboids.push(...compensationIntersectionCubes);
     if (nSign === 1) cuboids.push([1, ...newCube]);
