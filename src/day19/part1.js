@@ -1,10 +1,7 @@
 const fs = require('fs');
-const file = fs.readFileSync('./sample_input.txt');
-const scannerStrings = file.toString().split('\n\n')
-const zip = (a, b) => a.map((k, i) => [k, b[i]]);
 
-function add(accumulator, a) {
-    return accumulator + a;
+function zip(a,b) {
+    return a.map((k, i) => [k, b[i]])
 }
 
 function combineAll(arr1, arr2, arr3){
@@ -35,23 +32,6 @@ function determinant(mat){
 
 }
 
-function unittestDeterminant() {
-    let test0 = determinant([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
-    let test1 = determinant([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-    let test2 = determinant([[1, 1, 1], [2, 2, 2], [3, 3, 3]])
-    let test3 = determinant([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
-    let testX = determinant([[1, 2, 3], [4, 11, 6], [7, 8, 9]])
-    let testY = determinant([[-5, 2, 3], [4, 5, 6], [7, 8, 9]])
-
-
-    console.assert(test0 === 0, 'determinant unittest 0 failed')
-    console.assert(test1 === 0, 'determinant unittest 1 failed')
-    console.assert(test2 === 0, 'determinant unittest 2 failed')
-    console.assert(test3 === 0, 'determinant unittest 3 failed')
-    console.assert(testX === -72, 'determinant unittest X failed')
-    console.assert(testY === 18, 'determinant unittest Y failed')
-}
-
 function matMul(m1, m2){
     if (m1[0].length !== m2.length) throw Error("Matrices cannot be multiplied");
     let multiplication = new Array(m1.length).fill('placeholder');
@@ -59,18 +39,11 @@ function matMul(m1, m2){
     for (let x=0; x < multiplication.length; x++) {
         for (let y=0; y < multiplication[x].length; y++) {
             for (let z=0; z<m1[0].length; z++) {
-                //dot for every position
                 multiplication [x][y] = multiplication [x][y] + m1[x][z]*m2[z][y];
             }
         }
     }
     return multiplication
-}
-
-function unittestMatMul() {
-    let expected = [[2], [3], [5]]
-    let test = matMul([[1, 0, 0], [0, 1, 0], [0, 0, 1]], [[2], [3], [5]])
-    console.assert(JSON.stringify(test) === JSON.stringify(expected), 'multiplication with identity matrix failed')
 }
 
 /*
@@ -83,106 +56,72 @@ for(const x of [-1, 1]){
     for(const y of [-1, 1]){
         for (const z of [-1, 1]){
             for (const q of combineAll([x,0,0], [0,y,0], [0,0,z])){
-                if (determinant(q) === 1) rotationMat.push(q) //
+                if (determinant(q) === 1) rotationMat.push(q)
             }
         }
     }
 }
 
-console.assert(rotationMat.length === 24, 'Rotation matrix is not 24 versions')
-unittestMatMul();
-unittestDeterminant();
+const reorientScanners = scannerData => {
+    const adjustedScanners = [{ position: [0, 0, 0], beacons: scannerData.shift(), isChecked: false }];
 
-function parseScanners(scannerStrings) {
-    let lines = scannerStrings.map(ss => ss.split('\n').slice(1))
-    return lines.map(line => {
-        let beacons = line.map(s => s.split(',').map(e => +e))
-        return beacons.map(bea => {
-            let distanceHashes = beacons.map(con =>{
-                let [d1, d2, d3] = zip(bea, con).map(([i,j]) => Math.abs(i-j))
-                return d1*d1 + d2*d2 + d3*d3
-            });
-            return {pos: bea, distanceHashes}
-        });
-    })
-}
+    while (scannerData.length) {
+        for (let i = 0; i < adjustedScanners.length; ++i) {
+            const { position, beacons, isChecked } = adjustedScanners[i];
+            if (isChecked) continue;
+            adjustedScanners[i].isChecked = true;
 
-let scanners = parseScanners(scannerStrings);
+            innerScannerLoop: for (let j = scannerData.length - 1; j >= 0; --j) {
+                const scannerToTest = scannerData[j];
 
-function commonBeacons(b1, b2){
-    const entriesB1 = [...b1.distanceHashes.entries()]
-    return entriesB1.map(([i, v]) => {
-        if (v !== 0){
-            const j = b2.distanceHashes.indexOf(v)
-            if (j > -1) return {i, j}
-        }
-        return null
-    }).filter(e => e !== null)
-}
+                for (let r of rotationMat) {
+                    const reorientedScanner = scannerToTest
+                        .map(([x,y,z]) => [[x], [y], [z]])
+                        .map(vec => matMul(r, vec).flat())
 
-function compareScanner(s1, s2){
-    for (const b1 of s1) {
-        for (const b2 of s2) {
-            const intersection = commonBeacons(b1, b2)
-            if (intersection.length >= 11) {
-                return {beaconI: b1, beaconJ:b2, intersection}
-            }
-        }
-    }
-}
+                    const neighbors = {};
+                    for (const [x, y, z] of beacons) {
+                        for (const [xx, yy, zz] of reorientedScanner) {
+                            const key = [x - xx, y - yy, z - zz].join(',');
+                            neighbors[key] = neighbors[key] + 1 || 1;
 
-let expected = 11
-let test = compareScanner(scanners[0], scanners[1])
-let testBackwards = compareScanner(scanners[0], scanners[1])
-console.assert(test.intersection.length === expected, 'expecting 12 overlaps between 0 and 1. Found ' + test.intersection.length)
-console.assert(testBackwards.intersection.length === expected, 'expecting 12 overlaps between 1 and 0. Found ' + test.intersection.length)
+                            if (neighbors[key] >= 12) {
+                                const [offsetX, offsetY, offsetZ] = key.split(',').map(Number);
+                                scannerData.splice(j, 1);
 
-function findRotationTranslation(intersectionsObj, s1, s2) {
-    let {intersection, beaconI, beaconJ} = intersectionsObj
-    for (const translationCandidate of combineAll(...beaconJ.pos)) {
-        let translationVector = zip(beaconI.pos, translationCandidate).map(([i, j]) => i - j)
-        for (let r of rotationMat) {
-            for (let {i: iIndex, j: jIndex} of intersection) {
-                let to = zip(s1[iIndex].pos, translationVector).map(([i, t]) => i - t)
-                let from = matMul(r, s2[jIndex].pos.map(e => [e])).flat() //column vector
-                if (zip(to, from).map(([t,f]) => t - f).reduce(add, 0) === 0) {
-                    console.log('here')
-                    return {r, t: translationVector}
+                                adjustedScanners.push({
+                                    position: [position[0] + offsetX, position[1] + offsetY, position[2] + offsetZ],
+                                    beacons: reorientedScanner,
+                                    isChecked: false,
+                                });
+
+                                continue innerScannerLoop;
+                            }
+                        }
+                    }
                 }
             }
         }
     }
-}
 
-function transform(r, t, b) {
-    return zip(matMul(r, b.pos.map(e => [e])).flat(), t).map(d => d[1] + d[0]);
-}
+    return adjustedScanners;
+};
 
-function pair(i,j){
-    return i + ',' + j
-}
+const input = fs
+    .readFileSync('./input.txt')
+    .toString();
 
-//scanners[0].absolute = [0, 0]
-let fixed = [0]
-let tried = new Set()
-while (fixed.length < scanners.length) {
-    for (let i = 0; i < scanners.length; i++) {
-        for (let j = 0; j < scanners.length; j++) {
-            if (tried.size > 0.95*scanners.length*scanners.length) console.log('aj')
-            if (i === j || tried.has(pair(i,j)) || fixed.filter(e => e === i).length === 0 || fixed.filter(e => e === j).length > 1) continue
-            let intersections = compareScanner(scanners[i], scanners[j])
-            if (!intersections) {
-                tried.add(pair(i,j))
-                continue
-            }
-            const rt = findRotationTranslation(intersections, scanners[i], scanners[j]);
-            if (!rt) {
-                tried.add(pair(i,j))
-                continue
-            }
-            scanners[j] = scanners[j].map(b => transform(rt.r, rt.t, b))
-            fixed.push(j)
-        }
-    }
-}
-console.log(fixed)
+const scannerData = input.split('\n\n')
+    .map(scannerString => scannerString.split('\n').slice(1)
+        .filter(line => line !== '').map(line => line.split(',').map(Number)))
+
+const adjustedScanners = reorientScanners(scannerData);
+const scannerSet = adjustedScanners.reduce((acc, scanner) => {
+    let globalPosition = scanner.position;
+    scanner.beacons.forEach(relativePos => {
+            let key = zip(globalPosition, relativePos).map(d => d[0] + d[1]).join(',')
+            acc.add(key);
+    });
+    return acc;
+}, new Set());
+console.log(scannerSet.size)
