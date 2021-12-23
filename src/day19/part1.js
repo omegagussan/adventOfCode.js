@@ -1,22 +1,23 @@
 const fs = require('fs');
 const file = fs.readFileSync('./sample_input.txt');
-const lines = file.toString().split('\n');
+const scannerStrings = file.toString().split('\n\n')
+const zip = (a, b) => a.map((k, i) => [k, b[i]]);
 
-function combineAll(arr1, arr2, arr3){
-    const res = []
-    res.push([arr1, arr2, arr3])
-    res.push([arr1, arr3, arr2])
-    res.push([arr2, arr1, arr3])
-    res.push([arr2, arr3, arr1])
-    res.push([arr3, arr2, arr1])
-    res.push([arr3, arr1, arr2])
-    return res
+function add(accumulator, a) {
+    return accumulator + a;
 }
 
-//OBS! 3x3 only
-// [ [a,b,c],
-// [d,e,f],
-// [g,h,i] ];
+function combineAll(arr1, arr2, arr3){
+    return [
+        [arr1, arr2, arr3],
+        [arr1, arr3, arr2],
+        [arr2, arr1, arr3],
+        [arr2, arr3, arr1],
+        [arr3, arr2, arr1],
+        [arr3, arr1, arr2]
+    ]
+}
+
 function determinant(mat){
     if(!mat.every(r => r.length === 3 || mat.length !== 3)){
         throw Error('Must be square 3x3')
@@ -51,72 +52,6 @@ function unittestDeterminant() {
     console.assert(testY === 18, 'determinant unittest Y failed')
 }
 
-
-/*
-https://math.stackexchange.com/questions/503047/why-is-the-determinant-of-a-rotation-matrix-equal-to-1
-generate all possible candidates for rotation matrixes with 3 dimensions > 160 st
-will filter away invalid rotation matrixes using the determinant => 24
- */
-let rotationMat = []
-for(let x of [-1, 1]){
-    for(let y of [-1, 1]){
-        for (let z of [-1, 1]){
-            for (let q of combineAll([x,0,0], [0,y,0], [0,0,z])){
-                if (determinant(q) === 1) rotationMat.push(q) //
-            }
-        }
-    }
-}
-
-let scanners = []
-let curr = []
-for (const line of lines){
-    if (line.length === 0)
-        continue
-    if (line[1] === "-") {
-        curr = []
-        scanners.push(curr)
-        continue
-    }
-    curr.push({cord: line.split(',').map(e => +e), relative: []})
-}
-for (const s of scanners){
-    for (let i=0; i < s.length; i++){
-        for (let j=0; j < s.length; j++){
-            if (j === 0) s[i].relative = Array(s.length).fill(null)
-            if (i === j) continue
-            let dx = Math.abs(s[i].cord[0] - s[j].cord[0])
-            let dy = Math.abs(s[i].cord[1] - s[j].cord[1])
-            let dz = Math.abs(s[i].cord[2] - s[j].cord[2])
-            let fingerprint = [dx*dx + dy*dy + dz*dz, Math.min(dx, dy, dz), Math.max(dx,dy,dz)].join(',')
-            s[i].relative[j] = fingerprint
-            s[j].relative[i] = fingerprint //TODO: we can prune loop to not have to do all twice.
-        }
-    }
-}
-
-function commonBeacons(b1, b2){
-    const cb = []
-    for (const [b1Index, r1] of b1.relative.entries()) {
-        if (r1 !== null){
-            const b2Index = b2.relative.indexOf(r1)
-            if (b2Index > -1) cb.push([r1, b1Index, b2Index])
-        }
-    }
-    return cb
-}
-
-function compareScanner(s1, s2){
-    for (let b1 of s1) {
-        for (let b2 of s2) {
-            const intersection = commonBeacons(b1, b2)
-            if (intersection.length >= 11) {
-                return {b1, b2, intersection}
-            }
-        }
-    }
-}
-
 function matMul(m1, m2){
     if (m1[0].length !== m2.length) throw Error("Matrices cannot be multiplied");
     let multiplication = new Array(m1.length).fill('placeholder');
@@ -138,38 +73,116 @@ function unittestMatMul() {
     console.assert(JSON.stringify(test) === JSON.stringify(expected), 'multiplication with identity matrix failed')
 }
 
-unittestMatMul();
-unittestDeterminant();
-
-
-function rebaseBtoA(scannerA, scannerB, intersectionsObj){
-    for(let i of intersectionsObj.intersection){
-        if(i[0].split(',')[1] === "0") continue
-        let from = scannerB[i[2]].cord
-        let to = scannerA[i[1]].cord
-        console.log('to', to)
-        for (let r of rotationMat){
-            let cand = matMul(r, from.map(e => [e])).flat() //column vector
-            console.log('cand', cand)
-            if (JSON.stringify(cand) === JSON.stringify(to)){
-                console.log('Bazinga')
+/*
+https://math.stackexchange.com/questions/503047/why-is-the-determinant-of-a-rotation-matrix-equal-to-1
+generate all possible candidates for rotation matrixes with 3 dimensions > 160 st
+will filter away invalid rotation matrixes using the determinant => 24
+ */
+let rotationMat = []
+for(const x of [-1, 1]){
+    for(const y of [-1, 1]){
+        for (const z of [-1, 1]){
+            for (const q of combineAll([x,0,0], [0,y,0], [0,0,z])){
+                if (determinant(q) === 1) rotationMat.push(q) //
             }
         }
     }
-    //rotationMat.map(r => matMul(r, ))
 }
 
-scanners[0].absolute = [0, 0]
-let fixed = new Set([0])
-while (fixed.size < scanners.length) {
-    for (let i = 0; i < scanners.length; i++) {
-        for (let j = 0; j < scanners.length; j++) {
-            if (i === j || !fixed.has(i) || fixed.has(j)) continue
-            let intersections = compareScanner(scanners[i], scanners[j])
-            if (!intersections) continue
-            rebaseBtoA(scanners[i], scanners[j], intersections) //TODO: assign back to scanner[j]
-            fixed.add(j)
+console.assert(rotationMat.length === 24, 'Rotation matrix is not 24 versions')
+unittestMatMul();
+unittestDeterminant();
+
+function parseScanners(scannerStrings) {
+    let lines = scannerStrings.map(ss => ss.split('\n').slice(1))
+    return lines.map(line => {
+        let beacons = line.map(s => s.split(',').map(e => +e))
+        return beacons.map(bea => {
+            let distanceHashes = beacons.map(con =>{
+                let [d1, d2, d3] = zip(bea, con).map(([i,j]) => Math.abs(i-j))
+                return d1*d1 + d2*d2 + d3*d3
+            });
+            return {pos: bea, distanceHashes}
+        });
+    })
+}
+
+let scanners = parseScanners(scannerStrings);
+
+function commonBeacons(b1, b2){
+    const entriesB1 = [...b1.distanceHashes.entries()]
+    return entriesB1.map(([i, v]) => {
+        if (v !== 0){
+            const j = b2.distanceHashes.indexOf(v)
+            if (j > -1) return {i, j}
+        }
+        return null
+    }).filter(e => e !== null)
+}
+
+function compareScanner(s1, s2){
+    for (const b1 of s1) {
+        for (const b2 of s2) {
+            const intersection = commonBeacons(b1, b2)
+            if (intersection.length >= 11) {
+                return {beaconI: b1, beaconJ:b2, intersection}
+            }
         }
     }
 }
 
+let expected = 11
+let test = compareScanner(scanners[0], scanners[1])
+let testBackwards = compareScanner(scanners[0], scanners[1])
+console.assert(test.intersection.length === expected, 'expecting 12 overlaps between 0 and 1. Found ' + test.intersection.length)
+console.assert(testBackwards.intersection.length === expected, 'expecting 12 overlaps between 1 and 0. Found ' + test.intersection.length)
+
+function findRotationTranslation(intersectionsObj, s1, s2) {
+    let {intersection, beaconI, beaconJ} = intersectionsObj
+    for (const translationCandidate of combineAll(...beaconJ.pos)) {
+        let translationVector = zip(beaconI.pos, translationCandidate).map(([i, j]) => i - j)
+        for (let r of rotationMat) {
+            for (let {i: iIndex, j: jIndex} of intersection) {
+                let to = zip(s1[iIndex].pos, translationVector).map(([i, t]) => i - t)
+                let from = matMul(r, s2[jIndex].pos.map(e => [e])).flat() //column vector
+                if (zip(to, from).map(([t,f]) => t - f).reduce(add, 0) === 0) {
+                    console.log('here')
+                    return {r, t: translationVector}
+                }
+            }
+        }
+    }
+}
+
+function transform(r, t, b) {
+    return zip(matMul(r, b.pos.map(e => [e])).flat(), t).map(d => d[1] + d[0]);
+}
+
+function pair(i,j){
+    return i + ',' + j
+}
+
+//scanners[0].absolute = [0, 0]
+let fixed = [0]
+let tried = new Set()
+while (fixed.length < scanners.length) {
+    for (let i = 0; i < scanners.length; i++) {
+        for (let j = 0; j < scanners.length; j++) {
+            if (tried.size > 0.95*scanners.length*scanners.length) console.log('aj')
+            if (i === j || tried.has(pair(i,j)) || fixed.filter(e => e === i).length === 0 || fixed.filter(e => e === j).length > 1) continue
+            let intersections = compareScanner(scanners[i], scanners[j])
+            if (!intersections) {
+                tried.add(pair(i,j))
+                continue
+            }
+            const rt = findRotationTranslation(intersections, scanners[i], scanners[j]);
+            if (!rt) {
+                tried.add(pair(i,j))
+                continue
+            }
+            scanners[j] = scanners[j].map(b => transform(rt.r, rt.t, b))
+            fixed.push(j)
+        }
+    }
+}
+console.log(fixed)
