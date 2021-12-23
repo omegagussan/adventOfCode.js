@@ -90,11 +90,11 @@ const reorientScanners = scannerData => {
                             neighbors[key] = neighbors[key] + 1 || 1;
 
                             if (neighbors[key] >= 12) {
-                                const [offsetX, offsetY, offsetZ] = key.split(',').map(Number);
+                                const offset = key.split(',').map(Number);
                                 scannerData.splice(j, 1);
 
                                 adjustedScanners.push({
-                                    position: [position[0] + offsetX, position[1] + offsetY, position[2] + offsetZ],
+                                    position: zip(position, offset).map(d => d[0] + d[1]),
                                     beacons: reorientedScanner,
                                     isChecked: false,
                                 });
